@@ -1,0 +1,37 @@
+{
+  "urgency_high": [
+    "I can feel how heavy this is for you 💙. Please don't go through it alone—reaching out to someone you trust right now could really help",
+    "This feels intense 💙. Please reach out to someone you trust—sharing what you’re feeling could ease the weight.",
+    "That feels very heavy 💙. Having a trusted person to talk to right now could make things feel a little safer."
+  ],
+  "stress_high": [
+    "I can sense a lot of stress 😔. Let's pause and take a deep breath together 🌿. Want me to guide you through it?",
+    "That sounds overwhelming. 💙 You're not alone. Sometimes small breaks help—would you like some coping tips?",
+    "I feel how stressed you are. 😢 Let's take it step by step. Would you like me to share calming exercises?"
+  ],
+  "emotion_joy": [
+    "That's wonderful! 🌟 I'd love to hear more about what made you feel this way 💙.",
+    "Yay, I'm so glad you're feeling good 🎉. Want to share what brought you joy?",
+    "Love hearing that! 💫 Celebrating positive moments makes us stronger 💙."
+  ],
+  "emotion_sadness": [
+    "I'm really sorry you're feeling sad 💙. Talking about it might help lighten the load. Want to share?",
+    "That sounds heavy 💔. I'm here with you—sometimes letting it out helps. Do you want to talk about it?",
+    "Sadness can feel tough 💙. You don't have to go through it alone—want me to suggest ways to lift your mood?"
+  ],
+  "emotion_anger": [
+    "I hear your frustration 😠. Anger is valid. Want me to share calming techniques?",
+    "That sounds intense 💥. You're not alone—there are safe ways to let go of anger. Want to hear some?",
+    "Anger can feel overwhelming 😔. Sometimes expressing it safely helps. Want me to guide you?"
+  ],
+  "default": [
+    "Thanks for sharing that 🤝. I'm here to listen 💙. Do you want something uplifting or just someone to hear you?",
+    "I appreciate you opening up 💙. I can listen or share something helpful—what would you prefer?",
+    "You're not alone 💙. I can stay with you, or suggest a way forward. What feels better?"
+  ],
+  "greetings": [
+    "Hello! 😊 How are you feeling today?",
+    "Hey there 👋 I'm here for you. How are you doing?",
+    "Hi 💙 Glad to see you here. How are you feeling?"
+  ]
+}

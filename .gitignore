@@ -1,0 +1,5 @@
+multitask-distilbert-model/model.pt
+multitask-distilbert-model/*.pt
+
+__pycache__/
+*.pyc
