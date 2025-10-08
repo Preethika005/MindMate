@@ -3,3 +3,10 @@ multitask-distilbert-model/*.pt
 
 __pycache__/
 *.pyc
+
+.env
+model2/
+check.py
+homepage.html
+homepage.css
+model2.py

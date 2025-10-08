@@ -5,21 +5,30 @@ import json
 import random
 import string
 from rapidfuzz import process, fuzz
+from googletrans import Translator
 
+# --- Translator setup ---
+translator = Translator()
+
+# --- Streamlit page config ---
 st.set_page_config(page_title="MindMate Chatbot", page_icon="🧠")
 
-# --- Custom bubble styles ---
+# --- Language selection ---
+if "language" not in st.session_state:
+    st.session_state.language = "English"  # default
+
+st.sidebar.title("🌐 Select Language")
+st.session_state.language = st.sidebar.selectbox(
+    "Choose your language:", ["English", "Hindi", "Spanish", "French", "German", "Telugu", "Tamil"]
+)
+LANG_CODES = {"English": "en", "Hindi": "hi", "Spanish": "es", "French": "fr", "German": "de", "Telugu": "te", "Tamil": "ta"}
+user_lang_code = LANG_CODES[st.session_state.language]
+
+# --- Chat bubble styles ---
 st.markdown("""
 <style>
 body { background-color: #f5f7fa; }
-.chat-bubble {
-    padding: 10px 15px;
-    border-radius: 15px;
-    margin-bottom: 10px;
-    max-width: 80%;
-    font-size: 16px;
-    line-height: 1.4;
-}
+.chat-bubble { padding: 10px 15px; border-radius: 15px; margin-bottom: 10px; max-width: 80%; font-size: 16px; line-height: 1.4; }
 .user-bubble { background-color: #DCF8C6; margin-left: auto; margin-right: 0; }
 .bot-bubble { background-color: #e6e6e6; margin-left: 0; margin-right: auto; }
 .typing { font-style: italic; color: gray; margin: 5px 0 10px 0; }
@@ -44,13 +53,6 @@ for msg in st.session_state.messages:
 if st.session_state.typing:
     st.markdown("<div class='typing'>MindMate is typing...</div>", unsafe_allow_html=True)
 
-# --- User input ---
-user_input = st.chat_input("Type your message...")
-if user_input:
-    st.session_state.messages.append({"role": "user", "content": user_input})
-    st.session_state.typing = True
-    st.rerun()
-
 # --- Load motivational replies ---
 with open("replies.json", "r", encoding="utf-8") as f:
     RESPONSES = json.load(f)
@@ -73,41 +75,32 @@ def get_faq_reply(user_input):
     faq_keys_clean = [clean_text(q) for q in faq_keys]
 
     result = process.extractOne(
-        text_clean, faq_keys_clean, scorer=fuzz.ratio, score_cutoff=85  # increased threshold
+        text_clean, faq_keys_clean, scorer=fuzz.ratio, score_cutoff=85
     )
 
     if result:
         best_match, score, idx = result
-
-        # Additional safety check: ensure words are not too different
         if abs(len(text_clean) - len(faq_keys_clean[idx])) > 5:
             return None
-
         return MENTAL_HEALTH_QA[faq_keys[idx]]
     return None
 
-# --- Predefined greetings and factual questions ---
+# --- Predefined greetings and question detection ---
 greetings = ["hi", "hello", "hey", "good morning", "good evening","hey there","what's up"]
-
-# --- Question detection ---
 QUESTION_WORDS = ["what", "how", "why", "when", "where", "who", "which","can", "could", "should", "is", "are", "do", 
                   "does","did", "will", "would", "may", "might", "shall", "am", "have", "has", "had", "must", "need",
                   "want", "tell", "explain", "define","describe", "elaborate", "clarify","list", "compare", "contrast",
-                    "summarize", "outline", "review", "analyze", "interpret"]
+                  "summarize", "outline", "review", "analyze", "interpret"]
 
 def is_question(text: str) -> bool:
     text_clean = clean_text(text)
-    return (
-        text_clean.endswith("?") or
-        any(text_clean.startswith(word + " ") for word in QUESTION_WORDS)
-    )
-
+    return text_clean.endswith("?") or any(text_clean.startswith(word + " ") for word in QUESTION_WORDS)
 
 # --- Generate bot reply ---
 def generate_bot_reply(text: str):
     text_clean = clean_text(text)
 
-     # 🔹 Step 0: Crisis Detection (NEW)
+    # Crisis detection
     crisis_phrases = [
         "kill myself", "end my life", "suicide", "want to die", "die by suicide",
         "hurt myself", "i will die", "can't go on", "no reason to live",
@@ -127,7 +120,7 @@ def generate_bot_reply(text: str):
             "You matter and help is available right now 💙."
         )
 
-    # Step 1: FAQ
+    # FAQ
     if is_question(text):
         faq_reply = get_faq_reply(text)
         if faq_reply:
@@ -135,11 +128,11 @@ def generate_bot_reply(text: str):
         else:
             return "Sorry, I'm not sure about that 💙"
 
-    # Step 2: Greetings
+    # Greetings
     if any(greet in text_clean for greet in greetings):
         return get_random_reply("greetings")
 
-    # Step 3: Emotion/stress/urgency fallback
+    # Emotion/stress fallback
     try:
         response = requests.post("http://127.0.0.1:5000/predict", json={"text": text}, timeout=5)
         data = response.json()
@@ -164,11 +157,35 @@ def generate_bot_reply(text: str):
     except Exception:
         return "Sorry, I'm having trouble understanding right now. Please try again later. 💙"
 
-# --- Generate bot reply if needed ---
+# --- User input handling with translation ---
+user_input = st.chat_input("Type your message...")
+if user_input:
+    # Translate user input to English if needed
+    if user_lang_code != "en":
+        translated_input = translator.translate(user_input, src=user_lang_code, dest='en').text
+    else:
+        translated_input = user_input
+
+    # Save original user message
+    st.session_state.messages.append({"role": "user", "content": user_input})
+
+    # Typing state
+    st.session_state.typing = True
+    st.session_state.translated_input = translated_input
+    st.rerun()
+
+# --- Generate bot reply with translation ---
 if st.session_state.typing and st.session_state.messages and st.session_state.messages[-1]["role"] == "user":
-    time.sleep(1.2)  # simulate typing delay
-    last_user_text = st.session_state.messages[-1]["content"]
-    bot_reply = generate_bot_reply(last_user_text)
+    time.sleep(1.2)  # simulate typing
+    last_user_text_en = st.session_state.translated_input
+    bot_reply_en = generate_bot_reply(last_user_text_en)
+
+    # Translate bot response to user language
+    if user_lang_code != "en":
+        bot_reply = translator.translate(bot_reply_en, src='en', dest=user_lang_code).text
+    else:
+        bot_reply = bot_reply_en
+
     st.session_state.messages.append({"role": "bot", "content": bot_reply})
     st.session_state.typing = False
     st.rerun()
