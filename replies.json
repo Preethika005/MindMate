@@ -26,32 +26,31 @@
   "You deserve kindness and patience during stressful times 🌸."
 ],
  "emotion_joy": [
-  "That's wonderful! 🌟 I'd love to hear more about what made you feel this way 💙.",
-  "Yay, I'm so glad you're feeling good 🎉. Want to share what brought you joy?",
+  "That's wonderful! 🌟 I'm so happy for you 💙.",
+  "Yay, I'm so glad you're feeling good 🎉. ",
   "Love hearing that! 💫 Celebrating positive moments makes us stronger 💙.",
   "I'm so happy for you 🌈. Your joy shines bright.",
   "That's amazing 🎉. You deserve every bit of happiness.",
-  "Your happiness is contagious 💕.",
-  "So glad to see you smiling 🌟.",
-  "Joyful moments like these are precious ✨.",
+  "Your happiness is contagious 💕. Keep spreading that joy!",
+  "So glad to see you smiling 🌟. I hope you continue to feel this way.",
+  "Joyful moments like these are precious ✨. Preserve them.",
   "That's beautiful 💙. Keep holding onto that feeling.",
-  "I love seeing you happy 🌸."
+  "I love seeing you happy 🌸. It's a beautiful thing."
 ],
   "emotion_sadness": [
-  "I'm really sorry you're feeling sad 💙. Talking about it might help lighten the load",
-  "That sounds heavy 💔. I'm here with you—sometimes letting it out helps",
-  "Sadness can feel tough 💙. You don't have to go through it alone.I'm here with you. ",
-  "It's okay to feel sad 💔. Your feelings are valid.",
+  "I'm really sorry you're feeling this way 💙. Talking about it might help lighten the load.",
+  "That sounds heavy 💔. I'm here with you—sometimes letting it out helps.",
+  "Believe in your ability to overcome challenges and grow 💙. You don't have to go through it alone.I'm here with you.",
+  "You are stronger than you think, and you will get through this. 💔. Your feelings are valid.",
   "I hear your sadness 💙. You're not alone in this.",
   "Feeling down doesn't make you weak 🌧️.",
-  "Sometimes sadness just needs to be felt 🌙.",
+  "Sometimes sadness just needs to be felt 🌙. I hear you.",
   "Your emotions matter 💕. It's okay to take your time.",
-  "Sad moments can feel heavy 🌊. I'm here with you.",
-  "It's okay to let the sadness flow 🌸.",
-  "I'm really sorry you're feeling this way 💙. Remember, you're not alone—I'm here to listen.",  
-  "It's okay to feel sad sometimes 💙. Your feelings are valid, and I'm here to support you.",
-  "Sadness can be really tough 💔. I'm here to listen if you want to share more about what's making you feel this way.",
-  "I'm sorry you're going through a hard time 💙. Remember, it's okay to feel sad, and reaching out to someone you trust can help."
+  "Every step you take, no matter how small, is progress 🌊. I'm here with you.",
+  "Remember, growth often comes from the hardest times.🌸.",
+  "I'm really sorry you're feeling this way 💙. Remember, you're not alone—I'm here to listen.",
+  "Believe in the possibility of a brighter tomorrow.💙. Your feelings are valid, and I'm here to support you.",
+  "You have the power to turn your pain into strength❤️. I'm here to listen if you want to share more about what's making you feel this way."
 
 ],
   "emotion_anger": [
@@ -66,8 +65,15 @@
   "It's valid to feel this way 🌪️. You don't have to push it down or ignore it.",
   "Anger often hides hurt or disappointment 💔. Acknowledging it can bring you closer to healing."
 ],
+  "emotion_stress": [
+  "I can sense the stress you're under 🌪️. Taking a moment to breathe deeply might help you feel a bit calmer.",
+  "It's okay to feel overwhelmed sometimes 🌊. Remember to be kind to yourself—you deserve care and patience.",
+  "Stress can feel heavy 😔. Taking small breaks and focusing on one thing at a time might help lighten the load.",
+  "You're doing your best in a tough situation 🌟. It's okay to take things one step at a time.",
+  "Your feelings of stress are valid 💙. Remember, it's okay to ask for help or take a moment for yourself."
+],
   "default": [
-    "Thanks for sharing that 🤝. I'm here to listen 💙.",
+  "Thanks for sharing that 🤝. I'm here to listen 💙.",
   "I appreciate you opening up 💙. Your feelings are valid.",
   "You're not alone 💙. I'm here with you.",
   "I hear you 🌸. It's okay to let it out.",
@@ -80,17 +86,16 @@
 ],
   "greetings": [
     "Hello! 😊 How are you feeling today?",
-    "Hey there 👋 I'm here for you. How are you doing?",
+    "Hey there 👋 I'm here for you. How's your heart feeling today?",
     "Hi 💙 Glad to see you here. How are you feeling?",
     "Hi there 🌸 How's your day going so far?",
     "Hey friend 🤗 What's on your mind today?",
     "Hello 🙌 Hope you're doing well. How are you feeling?",
-    "Hi 🌼 I'm glad you're here. How are you today?",
-    "Hey 💫 Just checking in—how are you holding up?",
+    "Hi 🌼 I'm glad you're here. How are you feeling today?",
+    "Hey 💫 How's your mood today?",
     "Hi there 🌻 How are things going for you?",
     "Hello 💕 I care about you. How are you feeling right now?",
-    "hey there! 😊 How can I support you today?",
+    "hey there! 😊 how are you feeling today?",
     "hi! 👋 I'm here to listen. How are you feeling?"
-
   ]
 }

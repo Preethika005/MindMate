@@ -5,8 +5,26 @@ import json
 import random
 import string
 from rapidfuzz import process, fuzz
+from googletrans import Translator
+
+translator = Translator()
+awaiting_tips_response = False
+current_emotion_for_tips = None
 
 st.set_page_config(page_title="MindMate Chatbot", page_icon="🧠")
+
+# --- Language selection ---
+
+if "language" not in st.session_state:
+    st.session_state.language = "English"  # default
+
+st.sidebar.title("🌐 Select Language")
+st.session_state.language = st.sidebar.selectbox(
+    "Choose your language:", ["English", "Hindi", "Spanish", "French", "German", "Telugu", "Tamil"]
+)
+LANG_CODES = {"English": "en", "Hindi": "hi", "Spanish": "es", "French": "fr", "German": "de", "Telugu": "te", "Tamil": "ta"}
+user_lang_code = LANG_CODES[st.session_state.language]
+
 
 # --- Custom bubble styles ---
 st.markdown("""
@@ -30,7 +48,16 @@ st.title("🧠 MindMate Mental Health Chatbot")
 
 # --- Session state ---
 if "messages" not in st.session_state:
-    st.session_state.messages = []
+    # Load replies file once for greeting
+    with open("replies.json", "r", encoding="utf-8") as f:
+        RESPONSES = json.load(f)
+
+    # Pick a random greeting from the greetings list
+    first_message = random.choice(RESPONSES.get("greetings", ["Hi, I'm MindMate! How are you feeling today?"]))
+    
+    st.session_state.messages = [
+        {"role": "bot", "content": first_message}
+    ]
 if "typing" not in st.session_state:
     st.session_state.typing = False
 
@@ -47,9 +74,19 @@ if st.session_state.typing:
 # --- User input ---
 user_input = st.chat_input("Type your message...")
 if user_input:
+    # Translate user input to English if needed
+    if user_lang_code != "en":
+        translated_input = translator.translate(user_input, src=user_lang_code, dest='en').text
+    else:
+        translated_input = user_input
+
     st.session_state.messages.append({"role": "user", "content": user_input})
     st.session_state.typing = True
+    st.session_state.translated_input = translated_input
     st.rerun()
+
+with open("tips.json", "r", encoding="utf-8") as f:
+    TIPS = json.load(f)
 
 # --- Load motivational replies ---
 with open("replies.json", "r", encoding="utf-8") as f:
@@ -102,32 +139,63 @@ def is_question(text: str) -> bool:
         any(text_clean.startswith(word + " ") for word in QUESTION_WORDS)
     )
 
+# --- Global session flags for tips ---
+if "awaiting_tips_response" not in st.session_state:
+    st.session_state.awaiting_tips_response = False
+if "current_emotion_for_tips" not in st.session_state:
+    st.session_state.current_emotion_for_tips = None
+
+# --- Mapping emotions to replies.json keys ---
+emotion_messages = {
+    "sadness": "emotion_sadness",
+    "anger": "emotion_anger",
+    "joy": "emotion_joy",
+    "fear": "emotion_fear",
+    "stress": "stress_high",
+    "anxiety": "emotion_sadness"  # fallback example
+}
+
+tips_prompts = [
+    "Would you like some gentle tips to help you feel better? (yes/no)",
+    "Can I share some tips that might brighten your day? (yes/no)",
+    "How about a few helpful suggestions to ease your feelings? (yes/no)",
+    "Would you like me to share some comforting advice? (yes/no)",
+    "Can I offer a few tips to support you right now? (yes/no)"
+]
+
 
 # --- Generate bot reply ---
 def generate_bot_reply(text: str):
     text_clean = clean_text(text)
 
-     # 🔹 Step 0: Crisis Detection (NEW)
-    crisis_phrases = [
-        "kill myself", "end my life", "suicide", "want to die", "die by suicide",
-        "hurt myself", "i will die", "can't go on", "no reason to live",
-        "life is meaningless", "i want to end it", "take my life"," i want to kill myself",
-        "i want to die", "i'm going to kill myself", "i'm going to die", "i want to harm myself",
-        "i want to end my life", "i can't go on", "there's no point in living", "life is pointless",
-        "i don't want to live anymore", "i'm done with life", "i want to end it all", "i'm so tired of living",
-        "i want to disappear", "i'm at the end of my rope", "i can't take it anymore", "i'm overwhelmed and want to die"
-    ]
+    # Step 0: Crisis Detection
+    crisis_phrases = ["kill myself", "suicide", "i want to die", "hurt myself", "can't go on"]
     if any(phrase in text_clean for phrase in crisis_phrases):
-        return (
-            "💙 I'm really sorry that you're feeling like this. "
-            "You don’t have to face it alone. Please reach out to someone who can help — "
-            "**in India, you can call AASRA at +91-9820466726 or Snehi at +91-9582208181.**\n\n"
-            "If you’re outside India, you can find international hotlines here: "
-            "[findahelpline.com](https://findahelpline.com), available 24/7. "
-            "You matter and help is available right now 💙."
-        )
+        return "It sounds like you are going through an extremely difficult time right now..."
 
-    # Step 1: FAQ
+    # Step 1: Check if awaiting tips response
+    if st.session_state.awaiting_tips_response:
+        user_lower = text_clean.lower()
+        yes_responses = ["yes", "yeah", "yep", "sure"]
+        no_responses = ["no", "nope", "nah", "not now"]
+
+        if any(word in user_lower for word in yes_responses):
+            tips_list = TIPS.get(st.session_state.current_emotion_for_tips, ["Take care of yourself 💙"])
+            # Reset flags before returning
+            st.session_state.awaiting_tips_response = False
+            st.session_state.current_emotion_for_tips = None
+            return "Here are some tips for you:\n\n- " + "\n- ".join(tips_list)
+
+        elif any(word in user_lower for word in no_responses):
+            # Reset flags before returning
+            st.session_state.awaiting_tips_response = False
+            st.session_state.current_emotion_for_tips = None
+            return "Sure 💙 I'm here to listen whenever you need."
+
+        else:
+            return "I'm here whenever you're ready 💙."  # Keep waiting for a clear response
+
+    # Step 2: Check if it's a question (FAQ)
     if is_question(text):
         faq_reply = get_faq_reply(text)
         if faq_reply:
@@ -135,40 +203,46 @@ def generate_bot_reply(text: str):
         else:
             return "Sorry, I'm not sure about that 💙"
 
-    # Step 2: Greetings
-    if any(greet in text_clean for greet in greetings):
+    # Step 3: Greetings
+    if any(word in greetings for word in text_clean.split()):
         return get_random_reply("greetings")
 
-    # Step 3: Emotion/stress/urgency fallback
+    # Step 4: Emotion detection API call
     try:
         response = requests.post("http://127.0.0.1:5000/predict", json={"text": text}, timeout=5)
         data = response.json()
-
         emotion = data.get("emotion", "neutral")
-        stress = data.get("stress_level", "low")
+        stress = data.get("stress", "low")
         urgency = data.get("urgency", "low")
 
-        if urgency == "high":
-            return get_random_reply("urgency_high")
-        if stress == "high":
-            return get_random_reply("stress_high")
-        if emotion == "joy":
-            return get_random_reply("emotion_joy")
-        if emotion == "sadness":
-            return get_random_reply("emotion_sadness")
-        if emotion == "anger":
-            return get_random_reply("emotion_anger")
+        summary = f"Emotion: {emotion.capitalize()} || Stress: {stress.capitalize()} || Urgency: {urgency.capitalize()}"
+        message_key = emotion_messages.get(emotion, "default")
+        message = get_random_reply(message_key)
 
-        return get_random_reply("default")
+        # Ask if user wants tips for detected emotion
+        if emotion in TIPS:
+            st.session_state.awaiting_tips_response = True
+            st.session_state.current_emotion_for_tips = emotion
+            message += "\n\n💬 " + random.choice(tips_prompts)
+
+        return f"{summary}\n\n {message}"
 
     except Exception:
-        return "Sorry, I'm having trouble understanding right now. Please try again later. 💙"
+        return "Sorry, I'm having trouble understanding right now. Please try again later 💙"
+
 
 # --- Generate bot reply if needed ---
 if st.session_state.typing and st.session_state.messages and st.session_state.messages[-1]["role"] == "user":
-    time.sleep(1.2)  # simulate typing delay
-    last_user_text = st.session_state.messages[-1]["content"]
-    bot_reply = generate_bot_reply(last_user_text)
+    time.sleep(1.2)  # simulate typing
+    last_user_text_en = st.session_state.translated_input
+    bot_reply_en = generate_bot_reply(last_user_text_en)
+
+    # Translate bot response to user language
+    if user_lang_code != "en":
+        bot_reply = translator.translate(bot_reply_en, src='en', dest=user_lang_code).text
+    else:
+        bot_reply = bot_reply_en
+
     st.session_state.messages.append({"role": "bot", "content": bot_reply})
     st.session_state.typing = False
     st.rerun()

@@ -1,0 +1,47 @@
+{
+  "anger": [
+    "Take deep breaths slowly to calm down.",
+    "Step away from the situation for a moment to cool down.",
+    "Practice relaxing activities like listening to music or walking.",
+    "Remember that everyone makes mistakes, including yourself.",
+    "Engage in physical activity like walking or exercise to release tension.",
+    "Practice relaxation techniques such as meditation or listening to calming music."
+  ],
+  "stress": [
+    "Break tasks into smaller steps to avoid feeling overwhelmed.",
+    "Practice deep breathing or mindfulness exercises.",
+    "Set aside time to relax with your favorite activities.",
+    "Reach out to someone you trust and share your feelings.",
+    "Make sure to get enough sleep each night.",
+    "Take short breaks throughout the day to rest and recharge.",
+    "Engage in physical activity like walking or stretching.",
+    "Eat healthy meals and stay hydrated.",
+    "Go for a walk or spend time in nature to clear your mind."
+  ],
+  "fear": [
+    "Maintain good sleep, nutrition, and hydration to strengthen emotional resilience.",
+    "Take slow, deep breaths to help your body relax.",
+    "Challenge negative thoughts and focus on facts.",
+    "Share your feelings with a trusted friend, family member, or counselor.",
+    "Use grounding techniques, such as naming things you can see, hear, or touch.",
+    "Spend time in nature or go for a walk."
+  ],
+  "sadness": [
+    "Limit exposure to negative news or social media.\n",
+    "Spend time outdoors or in nature to lift your mood.\n",
+    "Engage in activities that you enjoy or that relax you\n",
+    "Take care of your body by staying hydrated and getting enough rest.\n",
+    "Try creative activities like drawing, painting, or writing.\n",
+    "Listen to uplifting music or watch something that makes you smile.\n",
+    "Avoid isolating yourself; connect with others when possible."
+  ],
+  "anxiety": [
+    "Practice slow, deep breathing to calm your body.",
+    "Talk to someone you trust about your feelings.",
+    "Spend time in nature to relax and reduce anxious feelings.",
+    "Limit news and social media if they're making you feel worse.",
+    "Exercise regularly to reduce anxious feelings.",
+    "Limit screen time, especially before bedtime.",
+    "Engage in hobbies or activities you enjoy to distract your mind."
+  ]
+}
