@@ -6,10 +6,23 @@ import random
 import string
 from rapidfuzz import process, fuzz
 from googletrans import Translator
+from datetime import datetime
+import matplotlib.pyplot as plt
+from io import BytesIO
+from reportlab.lib.pagesizes import A4
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Image
+from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.pdfgen import canvas
+from reportlab.lib.units import inch
+from reportlab.lib import colors
+from reportlab.lib.styles import ParagraphStyle
+from collections import Counter
+from reportlab.platypus import Spacer
+from reportlab.platypus import Table
 
 translator = Translator()
-awaiting_tips_response = False
-current_emotion_for_tips = None
+# awaiting_tips_response = False
+# current_emotion_for_tips = None
 
 st.set_page_config(page_title="MindMate Chatbot", page_icon="🧠")
 
@@ -61,6 +74,10 @@ if "messages" not in st.session_state:
 if "typing" not in st.session_state:
     st.session_state.typing = False
 
+if "chat_history" not in st.session_state:
+    st.session_state.chat_history = []  # store emotion, stress, message timeline
+
+
 # --- Display chat messages ---
 for msg in st.session_state.messages:
     bubble_class = "user-bubble" if msg["role"] == "user" else "bot-bubble"
@@ -92,8 +109,8 @@ with open("tips.json", "r", encoding="utf-8") as f:
 with open("replies.json", "r", encoding="utf-8") as f:
     RESPONSES = json.load(f)
 
-def get_random_reply(category: str) -> str:
-    return random.choice(RESPONSES.get(category, RESPONSES["default"]))
+# def get_random_reply(category: str) -> str:
+#     return random.choice(RESPONSES.get(category, RESPONSES["default"]))
 
 # --- Load mental health FAQ ---
 with open("mental_health_faq.json", "r", encoding="utf-8") as f:
@@ -123,8 +140,12 @@ def get_faq_reply(user_input):
         return MENTAL_HEALTH_QA[faq_keys[idx]]
     return None
 
+def get_random_reply(category):
+    return random.choice(RESPONSES.get(category, RESPONSES["default"]))
+
+
 # --- Predefined greetings and factual questions ---
-greetings = ["hi", "hello", "hey", "good morning", "good evening","hey there","what's up"]
+greetings = ["hi", "hello", "hey", "good morning", "good evening","hey there","what's up","hi there","greetings","howdy","hello there"]
 
 # --- Question detection ---
 QUESTION_WORDS = ["what", "how", "why", "when", "where", "who", "which","can", "could", "should", "is", "are", "do", 
@@ -169,9 +190,16 @@ def generate_bot_reply(text: str):
     text_clean = clean_text(text)
 
     # Step 0: Crisis Detection
-    crisis_phrases = ["kill myself", "suicide", "i want to die", "hurt myself", "can't go on"]
+    crisis_phrases = ["kill myself", "end my life", "suicide", "want to die", "die by suicide",
+        "hurt myself", "i will die", "can't go on", "no reason to live",
+        "life is meaningless", "i want to end it", "take my life"," i want to kill myself",
+        "i want to die", "i'm going to kill myself", "i'm going to die", "i want to harm myself",
+        "i want to end my life", "i can't go on", "there's no point in living", "life is pointless",
+        "i don't want to live anymore", "i'm done with life", "i want to end it all", "i'm so tired of living",
+        "i want to disappear", "i'm at the end of my rope", "i can't take it anymore", "i'm overwhelmed and want to die"
+]
     if any(phrase in text_clean for phrase in crisis_phrases):
-        return "It sounds like you are going through an extremely difficult time right now..."
+        return "It sounds like you are going through an extremely difficult time right now...You don’t have to face it alone. Please reach out to someone who can help."
 
     # Step 1: Check if awaiting tips response
     if st.session_state.awaiting_tips_response:
@@ -192,9 +220,9 @@ def generate_bot_reply(text: str):
             st.session_state.current_emotion_for_tips = None
             return "Sure 💙 I'm here to listen whenever you need."
 
-        else:
-            return "I'm here whenever you're ready 💙."  # Keep waiting for a clear response
-
+        st.session_state.awaiting_tips_response = False
+        st.session_state.current_emotion_for_tips = None
+        
     # Step 2: Check if it's a question (FAQ)
     if is_question(text):
         faq_reply = get_faq_reply(text)
@@ -214,6 +242,10 @@ def generate_bot_reply(text: str):
         emotion = data.get("emotion", "neutral")
         stress = data.get("stress", "low")
         urgency = data.get("urgency", "low")
+
+        # Store for report
+        st.session_state.chat_history.append({"emotion": emotion, "stress": stress, "text": text})
+
 
         summary = f"Emotion: {emotion.capitalize()} || Stress: {stress.capitalize()} || Urgency: {urgency.capitalize()}"
         message_key = emotion_messages.get(emotion, "default")
@@ -246,3 +278,220 @@ if st.session_state.typing and st.session_state.messages and st.session_state.me
     st.session_state.messages.append({"role": "bot", "content": bot_reply})
     st.session_state.typing = False
     st.rerun()
+
+# ----------------- 📄 PDF Report Generation -----------------
+class FooterCanvas(canvas.Canvas):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    def draw_footer(self):
+        footer_text = "Generated by MindMate - Your AI Mental Health Companion "
+        width, height = A4
+        self.setFont("Helvetica-Oblique", 9)
+        self.setFillColorRGB(0.5, 0.5, 0.5)
+        self.drawCentredString(width / 2, 0.5 * inch, footer_text)
+
+    def showPage(self):
+        self.draw_footer()
+        super().showPage()
+
+    def save(self):
+        self.draw_footer()
+        super().save()
+
+
+colored_title_style = ParagraphStyle(
+    'ColoredTitle',
+    fontName='Helvetica-Bold',
+    fontSize=25,
+    textColor=colors.HexColor("#1C77C3"),  # Soft blue, change as desired (example: "#0078D4" or "#4BA3C3")
+    spaceAfter=16,
+    alignment=1,  # Center the title
+)
+
+section_heading_style = ParagraphStyle(
+    'SectionHeading',
+    fontName='Times-Bold',
+    fontSize=18,
+    textColor=colors.HexColor("#1C77C3"),
+    alignment=0,  # Left
+    spaceBefore=18,    # Space above the paragraph
+    spaceAfter=10,     # Space below the paragraph
+)
+times_normal_style = ParagraphStyle(
+    'TimesNormal',
+    fontName='Times-Roman',
+    fontSize=12,           # You can adjust size as desired
+)
+summary_center_style = ParagraphStyle(
+    'SummaryCenter',
+    fontName='Times-Roman',
+    fontSize=13,
+    alignment=1,  # 1 means center
+    spaceBefore=16,
+    spaceAfter=10,
+)
+
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Image, Table
+from reportlab.lib.styles import ParagraphStyle
+from reportlab.lib.pagesizes import A4
+from reportlab.lib import colors
+from io import BytesIO
+from collections import Counter
+import matplotlib.pyplot as plt
+from datetime import datetime
+
+def generate_mindmate_report():
+    filename = "MindMate_Report.pdf"
+    doc = SimpleDocTemplate(filename, pagesize=A4)
+    elements = []
+    now = datetime.now().strftime("%B %d, %Y - %H:%M %p")
+
+    # --- Styles ---
+    colored_title_style = ParagraphStyle(
+        'ColoredTitle',
+        fontName='Helvetica-Bold',
+        fontSize=25,
+        textColor=colors.HexColor("#1C77C3"),
+        alignment=1,
+        spaceAfter=16,
+    )
+    section_heading_style = ParagraphStyle(
+        'SectionHeading',
+        fontName='Times-Bold',
+        fontSize=18,
+        textColor=colors.HexColor("#1C77C3"),
+        alignment=0,
+        spaceBefore=18,
+        spaceAfter=10,
+    )
+    times_normal_style = ParagraphStyle(
+        'TimesNormal',
+        fontName='Times-Roman',
+        fontSize=12,
+    )
+    summary_center_style = ParagraphStyle(
+        'SummaryCenter',
+        fontName='Times-Bold',
+        fontSize=13,
+        alignment=1,
+        spaceBefore=16,
+        spaceAfter=10,
+    )
+
+    # --- Header Information ---
+    elements.append(Paragraph("MindMate Mental Wellness Report", colored_title_style))
+    elements.append(Spacer(1, 12))
+    elements.append(Paragraph(f"<b>Date:</b> {now}", times_normal_style))
+    elements.append(Spacer(1, 3))
+    elements.append(Paragraph(f"<b>Language:</b> {st.session_state.language}", times_normal_style))
+    elements.append(Spacer(1, 3))
+    elements.append(Paragraph(f"<b>Messages Exchanged:</b> {len(st.session_state.messages)}", times_normal_style))
+    elements.append(Spacer(1, 12))
+
+    # --- Charts + Summary ---
+    if st.session_state.chat_history:
+        # Emotion stats for bar chart
+        emotions = [c["emotion"] for c in st.session_state.chat_history]
+        counts = Counter(emotions)
+        emotion_labels = list(counts.keys())
+        frequencies = [counts[emotion] for emotion in emotion_labels]
+        plt.figure(figsize=(5.5,4))
+        plt.bar(emotion_labels, frequencies, color="#00A313")
+        plt.title("Emotion Distribution")
+        plt.xlabel("Emotion")
+        plt.ylabel("Frequency")
+        plt.tight_layout()
+        buf = BytesIO()
+        plt.savefig(buf, format='png')
+        buf.seek(0)
+        plt.close()
+
+        # Stress stats for pie chart
+        stress_levels = [c.get("stress", "low") for c in st.session_state.chat_history]
+        stress_counts = Counter(stress_levels)
+        stress_labels = list(stress_counts.keys())
+        stress_sizes = [stress_counts[sl] for sl in stress_labels]
+        plt.figure(figsize=(4,4))
+        plt.pie(stress_sizes, labels=stress_labels, autopct='%1.1f%%', colors=["#1C77C3", "#FFD166", "#EF476F"])
+        plt.title("Stress Levels")
+        plt.tight_layout()
+        buf_pie = BytesIO()
+        plt.savefig(buf_pie, format='png')
+        buf_pie.seek(0)
+        plt.close()
+
+        # Combine charts side by side
+        emotion_chart_img = Image(buf, width=300, height=210)
+        stress_pie_img = Image(buf_pie, width=220, height=220)
+        chart_table = Table([[emotion_chart_img, stress_pie_img]], colWidths=[320, 240], rowHeights=[220])
+        chart_table.setStyle([('VALIGN', (0,0), (-1,-1), 'MIDDLE')])
+        elements.append(chart_table)
+
+        # Dominant Emotion and levels (summary centered beneath both charts)
+        dominant_emotion = max(counts, key=counts.get) if counts else "N/A"
+        stress_counter = Counter(stress_levels)
+        urgency_levels = [c.get("urgency", "low") for c in st.session_state.chat_history]
+        urgency_counter = Counter(urgency_levels)
+        overall_stress = max(stress_counter, key=stress_counter.get) if stress_counter else "N/A"
+        overall_urgency = max(urgency_counter, key=urgency_counter.get) if urgency_counter else "N/A"
+        summary_text = (
+            f"<b>Dominant Emotion Detected:</b> {dominant_emotion.capitalize()}<br/>"
+            f"<b>Overall Stress Level:</b> {overall_stress.capitalize()}<br/>"
+            f"<b>Urgency Level:</b> {overall_urgency.capitalize()}"
+        )
+        elements.append(Spacer(1, 10))
+        elements.append(Paragraph(summary_text, summary_center_style))
+
+    # --- Tips and Crisis, side by side ---
+    # Prepare tips and crisis lists as Paragraphs (so each item is a Paragraph)
+    tips_paragraphs = [Paragraph("<b>Personalized Tips</b>", section_heading_style)]
+    tips_paragraphs.append(Spacer(1, 8))
+    emotion_key = getattr(st.session_state, "current_emotion_for_tips", "neutral")
+    tips = TIPS.get(emotion_key, ["Take care of yourself ",
+                                  "Engage in activities you enjoy ",
+                                  "Reach out to loved ones",
+                                  "Practice mindfulness or relaxation techniques "])
+    for tip in tips:
+        tips_paragraphs.append(Paragraph(f"• {tip}", times_normal_style))
+        tips_paragraphs.append(Spacer(1, 3))
+
+    crisis = [
+        "India: AASRA Helpline - 91-9820466726",
+        "U.S.: Lifeline - 988",
+        "UK: Samaritans - 116 123"
+    ]
+    crisis_paragraphs = [Paragraph("<b>Crisis Support</b>", section_heading_style)]
+    crisis_paragraphs.append(Spacer(1, 8))
+    for c in crisis:
+        crisis_paragraphs.append(Paragraph(f"• {c}", times_normal_style))
+        crisis_paragraphs.append(Spacer(1, 3))
+
+    # Use a Table with two columns: tips and crisis
+    side_by_side_table = Table([[tips_paragraphs, crisis_paragraphs]],
+                              colWidths=[240, 240])
+    side_by_side_table.setStyle([
+        ('VALIGN', (0,0), (-1,-1), 'TOP'),
+        ('LEFTPADDING', (0,0), (-1,-1), 8),
+        ('TOPPADDING', (0,0), (-1,-1), 10),
+    ])
+    elements.append(Spacer(1, 12))
+    elements.append(side_by_side_table)
+    
+    # --- Build and save PDF ---
+    doc.build(elements, canvasmaker=FooterCanvas)
+    return filename
+
+
+
+# --- Download button ---
+st.markdown("---")
+if st.button("📄 Generate My Session Report"):
+    pdf_path = generate_mindmate_report()
+    with open(pdf_path, "rb") as f:
+        st.download_button(
+            "⬇️ Download MindMate Report (PDF)",
+            data=f,
+            file_name="MindMate_Report.pdf",
+            mime="application/pdf"
+        )
