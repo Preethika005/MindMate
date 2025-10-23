@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MindMate</title>
+<link rel="icon" href="🧠" />
+<style>
+html, body {
+    height: 100%;
+    width: 100vw;
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Poppins', sans-serif;
+    /* background: linear-gradient(180deg, #d9f4e8 0%, #b5e8e0 40%, #f4f8ec 100%); */
+}
+
+/* Hero section */
+@keyframes floatClouds {
+    from { background-position: 0 0; }
+    to { background-position: 1000px 0; }
+}
+.hero {
+    height: 100vh;
+    background: linear-gradient(180deg, #d8f3dc 0%, #b7e4c7 50%, #f1faee 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: #1b4332;
+    position: relative;
+    overflow: hidden;
+}
+.hero::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: url('https://cdn.pixabay.com/photo/2017/08/30/01/05/cloud-2694103_1280.jpg');
+    background-size: cover;
+    background-position: center;
+    opacity: 0.25;
+    animation: floatClouds 60s linear infinite;
+    z-index: 0;
+}
+.hero-content {
+    position: relative;
+    z-index: 2;
+    max-width: 800px;
+}
+.logo-float {
+    margin-bottom: 10px;
+    animation: gentleFloat 4s ease-in-out infinite;
+    border-radius: 50%;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+@keyframes gentleFloat {
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+    100% { transform: translateY(0px); }
+}
+.hero h1 {
+    font-size: 70px;
+    font-weight: 800;
+    color: #155d27;
+    margin-bottom: 15px;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+.hero p {
+    font-size: 20px;
+    color: #1b4332;
+    max-width: 700px;
+    margin: 0 auto 40px auto;
+    line-height: 1.6;
+}
+
+/* Button Navigation */
+.nav-buttons {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 40px;
+    /* margin-top: 40px; */
+    margin-bottom: 0;
+    /* background: none !important;   Ensure NO background */
+    box-shadow: none !important;   /* No shadow around group */
+    border: none !important;
+    background: #f1faee
+
+}
+.nav-buttons a {
+    background: linear-gradient(90deg, #97e35a 0%, #A5EC58 100%) !important;
+    color: #fff !important;
+    font-size: 20px !important;
+    font-weight: 800 !important;
+    padding: 22px 58px 22px 44px !important;
+    border-radius: 36px !important;
+    border: none !important;
+    box-shadow: 0 12px 42px #90ff681c, 0 1px 18px #a5ec5833;
+    text-decoration: none !important;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.22s, box-shadow 0.22s, transform 0.22s;
+    
+}
+.nav-buttons a:hover {
+    background: linear-gradient(90deg, #A5EC58 0%, #97e35a 100%) !important;
+    transform: scale(1.05) translateY(-2px);
+    box-shadow: 0 24px 56px #a5ec5875, 0 3px 28px #97e35a44;
+}
+
+/* Features grid */
+.features {
+    padding: 100px 30px 80px 30px;
+    background: linear-gradient(180deg, #f4f8ec 0%, #d8f3dc 100%);
+    text-align: center;
+}
+.features h2 {
+    font-size: 45px;
+    font-weight: 700;
+    color: #22577a;
+    margin-bottom: 60px;
+}
+.feature-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 48px 44px;
+    justify-items: center;
+    align-items: stretch;
+    max-width: 1200px;
+    margin: 0 auto;
+    box-sizing: border-box;
+}
+@media (max-width: 900px) {
+    .feature-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 32px 28px;
+    }
+}
+@media (max-width: 600px) {
+    .feature-grid {
+        grid-template-columns: 1fr;
+        gap: 28px 0;
+    }
+}
+.feature-card {
+    background: #fff;
+    border-radius: 20px;
+    padding: 36px 20px;
+    box-shadow: 0 8px 35px rgba(0,0,0,0.11);
+    width: 100%;
+    max-width: 370px;
+    min-height: 310px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    box-sizing: border-box;
+    transition: transform 0.25s, box-shadow 0.25s;
+}
+.feature-card:hover {
+    transform: translateY(-10px) scale(1.03);
+    box-shadow: 0 14px 40px rgba(85,190,140,0.13);
+}
+.feature-card img {
+    width: 88px;
+    height: 88px;
+    margin-bottom: 16px;
+}
+.feature-card h3 {
+    color: #22577a;
+    font-size: 24px;
+    margin-bottom: 16px;
+}
+.feature-card p {
+    font-size: 16px;
+    color: #2b2b2b;
+    margin: 0;
+}
+@media (max-width: 400px) {
+    .feature-card {
+        max-width: 99vw;
+        padding: 20px 5px;
+    }
+}
+
+/* Extra section */
+.extra-section {
+    text-align: center;
+    background: linear-gradient(180deg, #b7e4c7, #95d5b2);
+    padding: 90px 20px;
+    color: #1b4332;
+}
+.extra-section h2 {
+    font-size: 38px;
+    font-weight: 700;
+}
+.extra-section p {
+    font-size: 18px;
+    margin-top: 10px;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* Footer */
+.footer {
+    background-color: #1b4332;
+    color: #d8f3dc;
+    text-align: center;
+    padding: 25px;
+    font-size: 14px;
+    letter-spacing: 1px;
+    border-top: 3px solid #52b788;
+}
+</style>
+</head>
+<body>
+
+<!-- HERO SECTION -->
+<section class="hero">
+    <div class="hero-content">
+        <img src="logo.png" alt="MindMate Logo" width="300" class="logo-float">
+        <h1>MindMate</h1>
+        <p>Your personal mental wellness companion — chat, relax, and rediscover peace through AI-guided mindfulness.</p>
+    </div>
+</section>
+
+
+<!-- BUTTON NAVIGATION -->
+
+<div class="nav-buttons">
+    <a href="http://localhost:8501">💬 Chat with MindMate</a>
+    <a href="meditation.html">🌿 Meditation</a>
+    <a href="http://localhost:8502">📊 Breathing Exercises</a>
+</div>
+
+
+<!-- FEATURES SECTION -->
+<section class="features">
+    <h2>🌸Explore What MindMate Offers</h2>
+    <div class="feature-grid">
+        <div class="feature-card">
+            <img src="https://i.pinimg.com/1200x/47/ad/7b/47ad7bad68967cfa7d45382f9d615c0b.jpg" alt="Emotion Analysis" />
+            <h3>Emotion Analysis</h3>
+            <p>Detects your mood through AI conversation insights and suggests activities accordingly.</p>
+        </div>
+        <div class="feature-card">
+            <img src="https://i.pinimg.com/736x/bc/c2/bf/bcc2bf3517a46c76633f94ea1c9aa8fe.jpg" alt="Guided Meditation" />
+            <h3>Guided Meditation</h3>
+            <p>Audio-guided meditation to calm your mind and improve focus instantly.</p>
+        </div>
+        <div class="feature-card">
+            <img src="https://cdn-icons-png.freepik.com/128/1408/1408976.png" alt="Stress Relief Games" />
+            <h3>Stress Relief Games</h3>
+            <p>Fun mini-games designed to help you unwind and relax after a stressful day.</p>
+        </div>
+        <div class="feature-card">
+            <img src="https://cdn-icons-png.flaticon.com/512/1256/1256650.png" alt="Confidential Chat" />
+            <h3>Confidential Chat</h3>
+            <p>All your conversations are private — MindMate values your mental well-being and trust.</p>
+        </div>
+        <div class="feature-card">
+            <img src="https://cdn-icons-png.freepik.com/128/7853/7853531.png" alt="Breathing Exercises" />
+            <h3>Breathing Exercises</h3>
+            <p>Interactive breathing sessions for instant relaxation and balance.</p>
+        </div>
+        <div class="feature-card">
+            <img src="https://cdn-icons-png.freepik.com/128/6195/6195776.png" alt="24/7 AI Companion" />
+            <h3>24/7 AI Companion</h3>
+            <p>Your supportive companion — always there to listen and guide you.</p>
+        </div>
+    </div>
+</section>
+
+<!-- EXTRA SECTION -->
+<section class="extra-section">
+    <h2>🌿 Find Your Calm</h2>
+    <p>Take a deep breath, slow down, and let MindMate guide you through peaceful exercises and gentle reflections.</p>
+    <p style="font-size: 15px; color: #2b2b2b; margin-top: 25px;">
+        <b>Disclaimer:</b><i> This chatbot is only for early analysis and support. Please consult a professional or a psychiatrist for further guidance.</i>
+    </p>
+</section>
+
+<!-- FOOTER -->
+<footer class="footer">
+    © 2025 MindMate | Designed with 💚 amidst nature's calm
+</footer>
+</body>
+</html>
