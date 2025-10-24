@@ -20,21 +20,18 @@ dataset = load_dataset('csv', data_files=data_files)
 
 # 2. Tokenizer using DistilBERT
 tokenizer = DistilBertTokenizer.from_pretrained('distilbert-base-uncased')
-
-
 def tokenize_function(examples):
     return tokenizer(examples['text'], padding='max_length', truncation=True, max_length=128)  # reduced max_length
-
-
 tokenized_datasets = dataset.map(tokenize_function, batched=True)
 
 
 # 3. Encode labels as integers for each classification task
+# Converts string labels (like 'joy', 'fear') into integer indices, because neural networks work with numbers.
 label_list_emotion = sorted(set(dataset['train']['label']))  # e.g., ['fear', 'joy']
 label_list_stress = sorted(set(dataset['train']['stress_level']))  # e.g., ['low', 'moderate', 'high']
 label_list_urgency = sorted(set(dataset['train']['urgency']))  # e.g., ['low', 'high']
 
-
+# Adds integer labels for all three tasks to each example.
 def encode_labels(example):
     example['label_emotion'] = label_list_emotion.index(example['label'])
     example['label_stress'] = label_list_stress.index(example['stress_level'])

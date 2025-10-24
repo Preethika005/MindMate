@@ -257,7 +257,8 @@ def generate_bot_reply(text: str):
             st.session_state.current_emotion_for_tips = emotion
             message += "\n\n💬 " + random.choice(tips_prompts)
 
-        return f"{summary}\n\n {message}"
+        # return f"{summary}\n\n {message}"
+        return f"\n {message}"
 
     except Exception:
         return "Sorry, I'm having trouble understanding right now. Please try again later 💙"

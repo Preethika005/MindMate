@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Endless Runner Lite - Cute Stress Relief Game</title>
+<style>
+  body {
+    margin: 0;
+    background: #a0d8f7;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    font-family: 'Comic Sans MS', cursive, sans-serif;
+    user-select: none;
+  }
+  #gameCanvas {
+    background: linear-gradient(to top, #fbeec1, #f4a261);
+    border-radius: 20px;
+    box-shadow: 0 0 15px #f4a261cc;
+    display: block;
+  }
+  #score {
+    position: absolute;
+    top: 20px;
+    font-size: 24px;
+    font-weight: bold;
+    color: #264653;
+    text-shadow: 1px 1px 0 #f4a261;
+  }
+  #gameOver {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 32px;
+    font-weight: bold;
+    color: #e63946;
+    display: none;
+    text-align: center;
+    width: 100%;
+  }
+  #restartBtn {
+    margin-top: 20px;
+    padding: 10px 20px;
+    font-size: 18px;
+    font-weight: bold;
+    color: #fff;
+    background: #e76f51;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    box-shadow: 0 5px 0 #d1573e;
+  }
+  #restartBtn:hover {
+    background: #d1573e;
+  }
+</style>
+</head>
+<body>
+<div id="score">Score: 0</div>
+<canvas id="gameCanvas" width="960" height="420"></canvas>
+<div id="gameOver">
+  Game Over!<br />
+  <button id="restartBtn">Restart</button>
+</div>
+
+<script>
+  const canvas = document.getElementById('gameCanvas');
+  const ctx = canvas.getContext('2d');
+  const scoreDisplay = document.getElementById('score');
+  const gameOverDisplay = document.getElementById('gameOver');
+  const restartBtn = document.getElementById('restartBtn');
+
+  const groundHeight = 20;
+  let gameSpeed = 5;
+  let score = 0;
+  let gameOver = false;
+
+  // Player (cute character)
+  const player = {
+    width: 40,
+    height: 40,
+    x: 50,
+    y: canvas.height - groundHeight - 40,
+    dy: 0,
+    gravity: 0.24,
+    jumpForce: -10,
+    isJumping: false,
+    draw() {
+      // Draw cute character (simple)
+      ctx.fillStyle = '#ffb6b9';
+      ctx.beginPath();
+      ctx.ellipse(this.x + this.width / 2, this.y + this.height / 2, this.width / 2, this.height / 2, 0, 0, Math.PI * 2);
+      ctx.fill();
+      // Face details
+      ctx.fillStyle = '#6a4c93'; // eyes color
+      ctx.beginPath();
+      ctx.arc(this.x + 12, this.y + 18, 4, 0, Math.PI * 2);
+      ctx.arc(this.x + 28, this.y + 18, 4, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = '#6a4c93';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(this.x + 15, this.y + 30);
+      ctx.quadraticCurveTo(this.x + 20, this.y + 35, this.x + 25, this.y + 30);
+      ctx.stroke();
+    },
+    update() {
+      if (this.isJumping) {
+        this.dy += this.gravity;
+        this.y += this.dy;
+        if (this.y > canvas.height - groundHeight - this.height) {
+          this.y = canvas.height - groundHeight - this.height;
+          this.isJumping = false;
+          this.dy = 0;
+        }
+      }
+    },
+    jump() {
+      if (!this.isJumping) {
+        this.dy = this.jumpForce;
+        this.isJumping = true;
+      }
+    }
+  };
+
+  // Obstacles array
+  const obstacles = [];
+
+  // Obstacle class
+  class Obstacle {
+    constructor() {
+      this.width = 20 + Math.random() * 12;
+      this.height = 30 + Math.random() * 8;
+      this.x = canvas.width;
+      this.y = canvas.height - groundHeight - this.height;
+      this.color = '#f28482';
+    }
+    draw() {
+      ctx.fillStyle = this.color;
+      ctx.fillRect(this.x, this.y, this.width, this.height);
+      // Draw cute "spikes"
+      ctx.fillStyle = '#d72631';
+      ctx.beginPath();
+      ctx.moveTo(this.x, this.y);
+      ctx.lineTo(this.x + this.width / 2, this.y - 15);
+      ctx.lineTo(this.x + this.width, this.y);
+      ctx.fill();
+    }
+    update() {
+      this.x -= gameSpeed;
+    }
+  }
+
+  function detectCollision(player, obstacle) {
+    return (
+    player.x + 7 < obstacle.x + obstacle.width &&
+    player.x + player.width - 7 > obstacle.x &&
+    player.y + 7 < obstacle.y + obstacle.height &&
+    player.y + player.height - 2 > obstacle.y
+  );
+  }
+
+  function resetGame() {
+    obstacles.length = 0;
+    score = 0;
+    gameSpeed = 1.5;
+    player.y = canvas.height - groundHeight - player.height;
+    player.isJumping = false;
+    gameOver = false;
+    gameOverDisplay.style.display = 'none';
+    scoreDisplay.textContent = 'Score: 0';
+    requestAnimationFrame(gameLoop);
+  }
+
+  // Handle input
+  window.addEventListener('keydown', (e) => {
+    if (e.code === 'Space' || e.code === 'ArrowUp') {
+      player.jump();
+    }
+  });
+
+  // Touch for mobile
+  window.addEventListener('touchstart', () => {
+    player.jump();
+  });
+
+  // Game loop variables
+  let frameCount = 0;
+
+  function gameLoop() {
+    if (gameOver) return;
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Draw ground
+    ctx.fillStyle = '#264653';
+    ctx.fillRect(0, canvas.height - groundHeight, canvas.width, groundHeight);
+
+    // Update and draw player
+    player.update();
+    player.draw();
+
+    // Generate obstacles randomly
+      if (
+          frameCount > 60
+          && frameCount % 40 === 0
+          && (obstacles.length === 0 || (canvas.width - obstacles[obstacles.length - 1].x) >= 280)
+      ) {
+          obstacles.push(new Obstacle());
+      }
+
+    // Update and draw obstacles
+    for (let i = obstacles.length - 1; i >= 0; i--) {
+      obstacles[i].update();
+      obstacles[i].draw();
+
+      // Remove offscreen
+      if (obstacles[i].x + obstacles[i].width < 0) {
+        obstacles.splice(i, 1);
+        score++;
+        scoreDisplay.textContent = 'Score: ' + score;
+        // Gradually increase speed to up difficulty
+        if (score % 10 === 0) {
+          gameSpeed += 0.1;
+        }
+      }
+
+      // Collision detect
+      if (detectCollision(player, obstacles[i])) {
+        gameOver = true;
+        gameOverDisplay.style.display = 'block';
+      }
+    }
+
+    frameCount++;
+    if (!gameOver) {
+      requestAnimationFrame(gameLoop);
+    }
+  }
+
+  restartBtn.addEventListener('click', resetGame);
+
+  // Start game
+  resetGame();
+</script>
+</body>
+</html>
